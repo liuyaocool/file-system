@@ -189,8 +189,7 @@ const vm = Vue.createApp({
             window.open(`${FS_OPEN[FS_TYPE.TEXT]}#${row.path}`);
         },
         downloadFile(fileName) {
-            location.href = `${apiPath}/fs/download?action=download&path=`
-                + encodeURIComponent(this.getPagePath() + fileName);
+            location.href = downUrl(this.getPagePath() + fileName);
         },
         async uploadBatch() {
             let files = await fileChooser(null, true), formData = new FormData(),
@@ -286,21 +285,20 @@ const vm = Vue.createApp({
             });
         },
         getFilePreview(fsType, filepath) {
+            let purl = openUrl(filepath);
             switch(fsType) {
                 case FS_TYPE.FOLDER: return '-';
                 case FS_TYPE.IMAGE:
-                    return `<img class="preview" 
-                    src="${apiPath}/fs/res?path=${encodeURIComponent(filepath)}">`;
+                    return `<img class="preview" src="${purl}">`;
                 case FS_TYPE.VIDEO:
-                    return `<img class="preview"
-                    src="${apiPath}/fs/videoPic?path=${encodeURIComponent(filepath)}">`;
-//                    return `<video class="preview"
-//                    src="${apiPath}/fs/res?action=preview&path=${encodeURIComponent(filepath)}"></video>`;
+                    let lastIndex = purl.lastIndexOf('/');
+                    let result = `${purl.slice(0, lastIndex)}/.vpr/${purl.slice(lastIndex + 1)}.jpg`;
+                    return `<img class="preview" src="${result}">`;
+                    // return `<img class="preview"
+                    // src="${apiPath}/fs/videoPic?path=${encodeURIComponent(filepath)}">`;
                 default: return fsType;
             }
         },
-
-
     },
 }).mount("#app");
 

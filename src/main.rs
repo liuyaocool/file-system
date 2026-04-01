@@ -48,7 +48,7 @@ async fn main() {
     let home_path = args.get(2).unwrap_or(&def_home);
     let _ = HOME_PATH.set(home_path.to_string());
 
-    println!("Usage: {} <port> <home> \nserver running in port({}), home({})", args[0], port, home_path);
+    println!("Usage: {} <port> <home: same as nginx open> \nserver running in port({}), home({})", args[0], port, home_path);
 
     // 创建路由
     let app = Router::new()
@@ -76,7 +76,7 @@ async fn list_file(Path(path): Path<String>) -> Result<Json<Vec<FileMeta>>, FsEr
 }
 
 fn _list_file(path: String) -> Json<Vec<FileMeta>> {
-    println!("path : {}", path);
+    // println!("path : {}", path);
     let mut v = Vec::<FileMeta>::new();
     match fs::read_dir(path) {
         Ok(entries) => {

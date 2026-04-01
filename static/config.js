@@ -1,10 +1,7 @@
-const apiPath = "/fs";
-const GLOBAL = {
-};
-
-function openUrl(path) {
-    return `http://fs.com/open${path}`;
-}
+const apiPath = "/fs"
+    ,openUrl = filepath => `http://fs.com/open${filepath.replaceAll("&", "%26")}`
+    ,downUrl = filepath => `http://fs.com/down${filepath.replaceAll("&", "%26")}`
+;
 
 function isMobile() {
     return /Mobi/.test(navigator.userAgent);
@@ -91,5 +88,11 @@ function isFunc(f) {
 }
 
 function urlSafeBase64(str = '') {
-    return btoa(str).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+    // console.log(str);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    return btoa(String.fromCharCode(...data))
+        .replaceAll('+', '-')
+        .replaceAll('/', '_')
+        .replaceAll('=', '');
 }
