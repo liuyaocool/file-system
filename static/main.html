@@ -91,7 +91,7 @@ const vm = Vue.createApp({
             msg: '',
             msgList: [],
             showHidden: 'true' === localStorage.getItem('showHidden'),
-            pagePath: [], // every ends with '/'
+            pagePath: ["/"], // every ends with '/'
             partSize: 5*1024*1024,
             files: [
                 /**
@@ -121,7 +121,7 @@ const vm = Vue.createApp({
     methods: {
         async getFiles() {
             let pp = location.hash = this.getPagePath();
-            pp = pp && !pp.endsWith('/') ? (pp + '/') : pp;
+            pp = pp && !pp.endsWith('/') ? (pp + '/') : (pp || '/');
             localStorage.setItem('path', pp);
             let res = await (await fetch(`${apiPath}/list_file/${urlSafeBase64(pp)}`)).json();
             for (let i = 0; i < res.length; i++) {
@@ -160,6 +160,9 @@ const vm = Vue.createApp({
             this.getFiles();
         },
         folderLeave() {
+            if (this.pagePath.length <= 1) {
+                return;
+            }
             this.pagePath.pop();
             this.getFiles();
         },

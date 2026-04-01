@@ -2,6 +2,10 @@ const apiPath = "/fs";
 const GLOBAL = {
 };
 
+function openUrl(path) {
+    return `http://fs.com/open${path}`;
+}
+
 function isMobile() {
     return /Mobi/.test(navigator.userAgent);
 }
@@ -86,6 +90,6 @@ function isFunc(f) {
     return f && typeof f === 'function';
 }
 
-function urlSafeBase64(str) {
+function urlSafeBase64(str = '') {
     return btoa(str).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
 }
