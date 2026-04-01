@@ -74,8 +74,7 @@
     }
 
     async function nextText() {
-        const resp = await fetch(
-            `${apiPath}/fs/res?path=${encodeURIComponent(filePath)}`,
+        const resp = await fetch(openUrl(filePath),
             { headers: {"Range": `bytes=${readPos}-${readPos + pageSize - 1}`} });
         readPos += pageSize;
         const buf = await resp.arrayBuffer();

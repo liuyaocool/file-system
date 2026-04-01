@@ -21,7 +21,7 @@
 <script src="config.js"></script>
 <script>
     const filePath = location.hash.substring(1);
-    document.title = filePath.substr(filePath.lastIndexOf('/') + 1);
-    imgDoc.src = `${apiPath}/fs/res?path=${encodeURIComponent(filePath)}`;
+    document.title = decodeURIComponent(filePath.substr(filePath.lastIndexOf('/') + 1));
+    imgDoc.src = openUrl(filePath);
 </script>
 </html>

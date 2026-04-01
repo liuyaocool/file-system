@@ -83,7 +83,7 @@
         ,speed = [1.25, 1.5, 2, 2.5, 3] // 倍速
         ,eventPx = 10 // 滑动多少px触发事件
         ;
-    document.title = filePath.substr(filePath.lastIndexOf('/') + 1);
+    document.title = decodeURIComponent(filePath.substr(filePath.lastIndexOf('/') + 1));
     let startTime = 0
         ,startTimeout = null
         ,startSecond = '' // 操作时视频当前播放进度 s
