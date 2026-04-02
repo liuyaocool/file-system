@@ -9,20 +9,19 @@
     padding: 10px 0;
 }
 
-.folder:hover, .funcBtn:hover, .file:hover {
-    color: #33ffb4;
-}
-
-.funcBtn, .file { color: #00ff37; }
-
-.folder { color: #e3ff00; }
-
 .upload {
     margin: 0 0 0 20px;
     border-width: 8px;
 }
 .folder, .file, .funcBtn, .upload {
     font-size: 36px;
+}
+
+.path {
+    margin: 0 1vw 0 0;
+    min-width: 2vw;
+    border-radius: 1vw;
+    padding: 0px 2vw;
 }
 
 td {
@@ -32,29 +31,12 @@ td {
     /* text-overflow: ellipsis; */
 }
 
-/* 偶数行添加背景色 */
-tbody > tr:nth-child(even of :not([style*="display: none"])) {
-    background-color: #343434;
-}
-
 colgroup > col:nth-child(1) {width: 100%;}
 colgroup > col:nth-child(2) {width: var(--preview-width);}
 colgroup > col:nth-child(3) {width: 80px;}
 colgroup > col:nth-child(4) {width: 166px;}
 colgroup > col:nth-child(5) {width: 200px;}
 
-.th-bg {
-    background-color: #808080e0;
-}
-
-thead td {
-    background: #5b585847;
-    backdrop-filter: blur(88px);
-}
-
-tbody tr:hover, thead tr:nth-of-type(3):hover {
-    background-color: #04fb0436;
-}
 table {
     /* 超出宽度自动隐藏 */
     table-layout: fixed;
@@ -65,6 +47,11 @@ table td:nth-of-type(1) {
     padding-left: 5px;
     word-break: break-word;
     /* overflow-wrap: break-word; */
+}
+
+/* 偶数行添加背景色 */
+tbody > tr:nth-child(even of :not([style*="display: none"])) {
+    background-color: #343434;
 }
 
 .preview {

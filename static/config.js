@@ -1,6 +1,6 @@
-const apiPath = "/fs"
-    ,openUrl = filepath => `http://fs.com/open${filepath.replaceAll("&", "%26")}`
-    ,downUrl = filepath => `http://fs.com/down${filepath.replaceAll("&", "%26")}`
+const apiPath = "/fs-api"
+    ,openUrl = filepath => `http://fs.com/fs-open${filepath.replaceAll("&", "%26")}`
+    ,downUrl = filepath => `http://fs.com/fs-down${filepath.replaceAll("&", "%26")}`
 ;
 
 function isMobile() {
