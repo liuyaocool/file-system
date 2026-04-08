@@ -19,9 +19,9 @@
 
 .path {
     margin: 0 1vw 0 0;
-    min-width: 2vw;
+    min-width: 4vw;
     border-radius: 1vw;
-    padding: 0px 2vw;
+    padding: 0px 1vw;
 }
 
 td {

@@ -121,6 +121,7 @@
     vdo.addEventListener('loadedmetadata', function(e) {
         progressPerPxRatio = Math.min(vdo.duration/15/60, 1);
         vm.timeTotal = formatTime(vdo.duration);
+        e.target.volume = 0.1;
     });
 
     (async function init() {
