@@ -44,7 +44,7 @@
         </thead>
         <tbody>
             <tr v-for="(row, i) in files" v-show="row.name[0] != '.' || showHidden">
-                <td class="col-no">{{i}}</td>
+                <td class="col-no">{{i+1}}</td>
                 <td :title="row.name" :class="row.fsType=='folder' ? 'folder' : 'file'" 
                     @click="clickName(row)" class="col-name">{{row.name}}</td>
                 <td v-html="row.preview"></td>
