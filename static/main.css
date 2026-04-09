@@ -8,35 +8,41 @@
 
 .path {
     margin: 0 5px 0 0;
-    min-width: 23px;
+    min-width: 30px;
     border-radius: 5px;
     padding: 0px 6px;
 }
 
 .upload {
     margin: 0 10px 0 0;
-    border-width: 4px;
+    border-width: 3px;
+    line-height: 16px;
 }
 
 #main td {
     white-space: nowrap;
-    text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-#main colgroup > col:nth-child(1) {width: 100%;}
-#main colgroup > col:nth-child(2) {width: var(--preview-width);}
-#main colgroup > col:nth-child(3) {width: 80px;}
-#main colgroup > col:nth-child(4) {width: 166px;}
-#main colgroup > col:nth-child(5) {width: 86px;}
+.top {
+    text-align: left; 
+    padding-left: 5px;
+    white-space: normal;
+}
+
+.col-no { width: 50px; text-align: right; }
+.col-name { width: 100%; text-align: left; padding-left: 5px; }
+.col-preview { width: var(--preview-width); }
+.col-size { width: 80px; }
+.col-time { width: 166px; }
+.col-operate { width: 86px; }
 
 #main {
     /* 超出宽度自动隐藏 */
     table-layout: fixed;
     width: 100%;
 }
-#main td:nth-of-type(1) {text-align: left; padding-left: 5px;}
 
 .name-btn {
     /* background-color: #959090; */

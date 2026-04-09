@@ -13,33 +13,40 @@
 <div id="app">
     <table id="main">
         <!-- 添加这个dom 解决首行跨列导致的宽度失效 -->
-        <colgroup><col><col><col><col><col></colgroup>
+        <colgroup>
+            <col class="col-no">
+            <col class="col-name">
+            <col class="col-preview">
+            <col class="col-size">
+            <col class="col-time">
+            <col class="col-operate">
+        </colgroup>
         <thead class="fix-th">
-            <tr><td colspan="5" style="white-space: normal;">
+            <tr><td colspan="6" class="top">
                 <div v-for="(row, i) in pagePath" class="folder path" @click="gotoPagePath(i)">
                     {{row}}
                 </div>
-                <button class="upload" @click="uploadFile()">上传</button>
-                <button class="upload" @click="uploadFile(true)">批量上传</button>
                 <span v-html="msg"></span>
             </td></tr>
             <tr class="th-bg">
-                <td>名称
-                    <span @click="toggleShowHidden" class="name-btn"
-                        :class="showHidden ? 'name-btn-sel' : ''"
-                    >显隐</span>
+                <td class="col-no">编号</td>
+                <td class="col-name">名称
+                    <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
+                    <button class="upload" @click="uploadFile()">上传</button>
+                    <button class="upload" @click="uploadFile(true)">批量上传</button>
                 </td>
                 <td>预览</td>
                 <td>大小</td>
                 <td>修改时间</td>
                 <td>操作</td>
             </tr>
-            <tr><td class="folder" @click="folderLeave()" colspan="5">..</td></tr>
+            <tr><td class="col-no">0</td><td class="path-prev folder col-name" @click="folderLeave()" colspan="5">..</td></tr>
         </thead>
         <tbody>
             <tr v-for="(row, i) in files" v-show="row.name[0] != '.' || showHidden">
+                <td class="col-no">{{i}}</td>
                 <td :title="row.name" :class="row.fsType=='folder' ? 'folder' : 'file'" 
-                    @click="clickName(row)">{{row.name}}</td>
+                    @click="clickName(row)" class="col-name">{{row.name}}</td>
                 <td v-html="row.preview"></td>
                 <td>{{row.size}}</td>
                 <!-- <td><div style="width: 60px;" class="nowarp">{{row.suffix}}</div></td> -->
@@ -63,7 +70,7 @@
 </body>
 
 <script src="config.js"></script>
-<script>includeCss('main.css?v=1.7', 'main-phone.css?v=1.9')</script>
+<script>includeCss('main.css', 'main-phone.css?v=1.9')</script>
 <script src="vue3.global.js"></script>
 <script>
 
@@ -87,6 +94,7 @@ FS_OPEN[FS_TYPE.VIDEO] = 'video.html';
 const vm = Vue.createApp({
     data() {
         return {
+            isMobile: isMobile(),
             msg: '',
             msgList: [],
             showHidden: 'true' === localStorage.getItem('showHidden'),

@@ -1,8 +1,11 @@
 :root {
     --preview-width: 90px;
+    --bottom-padding: 16vw;
 }
 
-.folder, .funcBtn { text-decoration: underline; }
+#app {
+    padding-bottom: calc(var(--bottom-padding) + 1vw);
+}
 
 .folder, .funcBtn, .file {
     cursor: pointer;
@@ -10,43 +13,68 @@
 }
 
 .upload {
-    margin: 0 0 0 20px;
-    border-width: 8px;
+    margin: 0 0 0 1vw;
+    border-width: 0.5vw;
+    line-height: 4vw;
 }
 .folder, .file, .funcBtn, .upload {
-    font-size: 36px;
+    font-size: 3.6vw;
 }
 
+.funcBtn { margin: 0 0.3vw; }
+
 .path {
-    margin: 0 1vw 0 0;
-    min-width: 4vw;
+    margin: 0 1vw 1vw 0;
+    min-width: 10vw;
     border-radius: 1vw;
-    padding: 0px 1vw;
+    padding: 0px 1.5vw;
+    font-size: 5vw;
+}
+.path-prev {
+    position: fixed;
+    bottom: 2vw;
+    width: 20vw !important;
+    text-align: center !important;
+    height: 6vw;
+    line-height: 2vw;
+    border-radius: 2vw;
 }
 
 td {
     /* white-space: nowrap; */
-    text-align: center;
     /* overflow: hidden; */
     /* text-overflow: ellipsis; */
 }
 
-colgroup > col:nth-child(1) {width: 100%;}
-colgroup > col:nth-child(2) {width: var(--preview-width);}
-colgroup > col:nth-child(3) {width: 80px;}
-colgroup > col:nth-child(4) {width: 166px;}
-colgroup > col:nth-child(5) {width: 200px;}
+.top {
+    text-align: left; 
+    padding-left: 5px;
+    white-space: nowrap;
+    overflow-x: auto;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: var(--bottom-padding);
+    padding-top: 1vw;
+}
+
+.col-no { display: none; }
+.col-name {
+    width: 100%;
+    text-align: left;
+    padding-left: 5px;
+    word-break: break-word;
+    /* overflow-wrap: break-word; */
+}
+.col-preview { width: var(--preview-width); }
+.col-size {width: 80px;}
+.col-time {width: 166px;}
+.col-operate {width: 16vw;}
 
 table {
     /* 超出宽度自动隐藏 */
     table-layout: fixed;
     width: 100%;
-}
-table td:nth-of-type(1) {
-    text-align: left; 
-    padding-left: 5px;
-    word-break: break-word;
-    /* overflow-wrap: break-word; */
 }
 
 /* 偶数行添加背景色 */
