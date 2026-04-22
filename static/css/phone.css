@@ -1,0 +1,11 @@
+.col-name,
+/* .icon, */
+.pic-header * ,
+#main thead *
+{
+    font-size: 5vw !important;
+}
+
+.path:nth-of-type(1) {
+    padding: 0 5vw;
+}

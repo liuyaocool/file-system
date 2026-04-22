@@ -1,0 +1,35 @@
+@font-face {
+  font-family: "icon";
+  src: url('icon.woff2') format('woff2'),
+       url('icon.woff') format('woff'),
+       url('icon.ttf') format('truetype');
+}
+
+.icon {
+  font-family: "icon" !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-sort-down:after {
+    content: "\e6ba";
+}
+.icon-sort-up:after {
+    content: "\e6ba";
+    transform: scaleY(-1);
+    display: inline-block;
+}
+
+.icon-arrow02:before {
+  content: "\e60e";
+}
+
+.icon-file01:before {
+  content: "\e60d";
+}
+
+.icon-folder01:before {
+  content: "\e86c";
+}
+

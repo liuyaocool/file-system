@@ -63,8 +63,8 @@
 
 </div></body>
 
-<script src="config.js"></script>
-<script src="vue3.global.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/vue3.global.js"></script>
 
 <script>
     /**
@@ -118,10 +118,10 @@
             }
         },
     }).mount("#app");
-    vdo.addEventListener('loadedmetadata', function(e) {
+    vdo.addEventListener('loadedmetadata', e => {
         progressPerPxRatio = Math.min(vdo.duration/15/60, 1);
         vm.timeTotal = formatTime(vdo.duration);
-        e.target.volume = 0.1;
+        e.target.volume = isMobile() ? 1 : 0.1;
     });
 
     (async function init() {

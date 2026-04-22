@@ -96,3 +96,14 @@ function urlSafeBase64(str = '') {
         .replaceAll('/', '_')
         .replaceAll('=', '');
 }
+
+function dateFormat(sec) {
+    DATE_TEMP.setTime(sec * 1000);
+    const year = DATE_TEMP.getFullYear();
+    const month = String(DATE_TEMP.getMonth() + 1).padStart(2, '0');
+    const day = String(DATE_TEMP.getDate()).padStart(2, '0');
+    const hours = String(DATE_TEMP.getHours()).padStart(2, '0');
+    const minutes = String(DATE_TEMP.getMinutes()).padStart(2, '0');
+    const seconds = String(DATE_TEMP.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}

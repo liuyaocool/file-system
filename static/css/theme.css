@@ -30,11 +30,11 @@ td {
     text-align: center;
 }
 
-.folder, .funcBtn { text-decoration: underline; }
+/* .folder, .funcBtn { text-decoration: underline; } */
 .folder, .funcBtn, .file { cursor: pointer; }
 .folder:hover, .funcBtn:hover, .file:hover { color: #33ffb4; }
-.funcBtn, .file { color: #00ff37; }
-.folder { color: #e3ff00; }
+.icon-file01, .funcBtn, .file { color: #00ff37; }
+.icon-folder01, .folder { color: #e3ff00; }
 .th-bg { background-color: #808080e0; }
 thead td {
     background: #5b585847;
@@ -89,10 +89,22 @@ mrun { color: #0fffd7; }
 }
 
 .path {
-    display: inline-block;
-    text-align: center;
     background: #4c4c4c;
 }
 .path:hover {
     background: #777;
+}
+
+.col-name {
+    cursor: pointer;
+}
+
+.pic-item {
+    background-color: #474747;
+}
+.pic-time {
+    color: #999;
+}
+.pic-name {
+    color: #a4a4a4;
 }

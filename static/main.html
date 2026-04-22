@@ -4,53 +4,72 @@
 <head>
     <meta charset="UTF-8">
     <!-- 初始缩放 -->
-    <meta name="viewport" content="initial-scale=0.4">
+    <meta name="viewport" content="initial-scale=0.7">
     <title>FILE SYSTEM</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="theme.css"/>
+    <link rel="stylesheet" href="css/theme.css"/>
+    <link rel="stylesheet" href="css/icon.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
 </head>
 <body>
-<div id="app">
-    <table id="main">
+<div id="app" class="pic-main">
+    <link v-if="isMobile" rel="stylesheet" href="css/phone.css"/>
+    <div v-if="picMode" class="pic-header">
+        <button class="upload" @click="uploadFile(true)">上传</button>
+        <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
+        <span @click="togglePicMode" class="name-btn" :class="picMode ? 'name-btn-sel' : ''">图片模式</span>
+        <span @click="sortClick('name')" class="name-btn icon" :class="getSortIcon('name')">名称</span>
+        <span @click="sortClick('size')" class="name-btn icon" :class="getSortIcon('size')">大小</span>
+        <span @click="sortClick('time')" class="name-btn icon" :class="getSortIcon('time')">时间</span>
+        <span v-for="(row, i) in pagePath" class="folder path" @click="gotoPagePath(i)">{{row}}</span>
+        <span v-html="msg"></span>
+    </div>
+    <div v-if="picMode" class="pic-body" @wheel="picBodyScroll">
+        <div v-for="(row, i) in files" class="pic-item">
+            <div class="pic-preview" @click="clickName(row)" v-html="row.preview"></div>
+            <div v-if="!row.dir" class="pic-size">{{row.sizeStr}}</div>
+            <!-- <div class="pic-time">{{row.timeStr}}</div> -->
+            <div class="pic-name">{{row.name}}</div>
+        </div>
+    </div>
+    <table v-if="!picMode" id="main">
         <!-- 添加这个dom 解决首行跨列导致的宽度失效 -->
         <colgroup>
-            <col class="col-no">
+            <!-- <col class="col-preview"> -->
             <col class="col-name">
-            <col class="col-preview">
             <col class="col-size">
-            <col class="col-time">
+            <col class="col-time" v-if="!isMobile">
             <col class="col-operate">
         </colgroup>
         <thead class="fix-th">
             <tr><td colspan="6" class="top">
-                <div v-for="(row, i) in pagePath" class="folder path" @click="gotoPagePath(i)">
-                    {{row}}
-                </div>
+                <span v-for="(row, i) in pagePath" class="folder path" @click="gotoPagePath(i)">{{row}}</span> 
                 <span v-html="msg"></span>
             </td></tr>
             <tr class="th-bg">
-                <td class="col-no">编号</td>
-                <td class="col-name">名称
+                <!-- <td>预览</td> -->
+                <td class="col-name">
+                    <span @click="sortClick('name')">名称</span>
                     <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
-                    <button class="upload" @click="uploadFile()">上传</button>
-                    <button class="upload" @click="uploadFile(true)">批量上传</button>
+                    <span @click="togglePicMode" class="name-btn" :class="picMode ? 'name-btn-sel' : ''">图片模式</span>
+                    <!-- <button class="upload" @click="uploadFile()">上传</button>  -->
+                    <button class="upload" @click="uploadFile(true)">上传</button> 
                 </td>
-                <td>预览</td>
-                <td>大小</td>
-                <td>修改时间</td>
+                <td><span @click="sortClick('size')">大小</span></td>
+                <td v-if="!isMobile"><span @click="sortClick('time')">修改时间</span></td>
                 <td>操作</td>
             </tr>
-            <tr><td class="col-no">0</td><td class="path-prev folder col-name" @click="folderLeave()" colspan="5">..</td></tr>
+            <tr><td class="path-prev folder col-name" @click="folderLeave()" colspan="5">..</td></tr>
         </thead>
         <tbody>
-            <tr v-for="(row, i) in files" v-show="row.name[0] != '.' || showHidden">
-                <td class="col-no">{{i+1}}</td>
-                <td :title="row.name" :class="row.fsType=='folder' ? 'folder' : 'file'" 
-                    @click="clickName(row)" class="col-name">{{row.name}}</td>
-                <td v-html="row.preview"></td>
-                <td>{{row.size}}</td>
-                <!-- <td><div style="width: 60px;" class="nowarp">{{row.suffix}}</div></td> -->
-                <td>{{row.time}}</td>
+            <tr v-for="(row, i) in files">
+                <!-- <td v-html="row.preview" class="col-preview"></td> -->
+                <td :title="row.name" @click="clickName(row)" class="col-name tb-name">
+                    <span v-html="row.preview"></span>
+                    <span :style="{fontSize: isMobile && row.nameLen > 32 ? '12px' : ''}" :class="row.dir ? 'folder' : 'file'" >{{row.name}}</span>
+                </td>
+                <td>{{row.sizeStr}}</td>
+                <td v-if="!isMobile">{{row.timeStr}}</td>
                 <td v-if="row.fsType=='folder'">-</td>
                 <td v-else>
                     <span class="funcBtn" @click="openText(row)">文本</span>
@@ -66,258 +85,12 @@
     </div>
 
 </div>
-
 </body>
 
-<script src="config.js"></script>
-<script>includeCss('main.css', 'main-phone.css?v=1.9')</script>
-<script src="vue3.global.js"></script>
-<script>
-
-const FS_TYPE = {
-    FOLDER: 'folder',
-    IMAGE: 'image',
-    VIDEO: 'video',
-    TEXT: 'text',
-    PDF: 'pdf',
-    ZIP: 'zip',
-    DOC: 'doc',
-    EXCEL: 'excel',
-    PPT: 'ppt',
-};
-const FS_OPEN = {};
-const DATE_TEMP = new Date();
-FS_OPEN[FS_TYPE.IMAGE] = 'img.html';
-FS_OPEN[FS_TYPE.TEXT] = 'text.html';
-FS_OPEN[FS_TYPE.VIDEO] = 'video.html';
-
-const vm = Vue.createApp({
-    data() {
-        return {
-            isMobile: isMobile(),
-            msg: '',
-            msgList: [],
-            showHidden: 'true' === localStorage.getItem('showHidden'),
-            pagePath: ["/"], // every ends with '/'
-            partSize: 5*1024*1024,
-            files: [
-                /**
-                {
-                    "name": "",
-                    "size": "",
-                    "time": "",
-                    "suffix": "", // zip, tar.gz, tar.zst
-                    "fsType": "", // FS_TYPE
-                    "path": "",
-                }
-                */
-            ],
-        }
-    },
-    created() {
-        let p;
-        if (location.hash) {
-            p = location.hash.slice(1);
-        } else if(p = localStorage.getItem('path')) {
-        }
-        if (p) {
-            this.pagePath = decodeURIComponent(p).match(/[^\/]+\/?|\//g);
-        }
-        this.getFiles();
-    },
-    methods: {
-        async getFiles() {
-            let pp = location.hash = this.getPagePath();
-            pp = pp && !pp.endsWith('/') ? (pp + '/') : (pp || '/');
-            localStorage.setItem('path', pp);
-            let res = await (await fetch(`${apiPath}/list_file/${urlSafeBase64(pp)}`)).json();
-            for (let i = 0; i < res.length; i++) {
-                res[i].size = res[i].dir ? '-' : calcFileLength(res[i].size);
-                res[i].time = dateFormat(res[i].time);
-                res[i].suffix = res[i].dir ? '-' : getFileSuffix(res[i].name);
-                res[i].fsType = res[i].dir ? FS_TYPE.FOLDER : fsMimeType(res[i].suffix);
-                res[i].path = `${this.getPagePath()}${res[i].name}`;
-                res[i].preview = this.getFilePreview(res[i].fsType, res[i].path);
-            }
-            // sort
-            res.sort((f1, f2) => {
-                if (f1.fsType != f2.fsType) {
-                    if (f1.fsType == FS_TYPE.FOLDER) return -1;
-                    if (f2.fsType == FS_TYPE.FOLDER) return 1;
-                }
-                let f1Name = f1.name.toLowerCase(),
-                    f2Name = f2.name.toLowerCase(),
-                    min = Math.min(f1Name.length, f2Name.length);
-                for (let i = 0; i < min; i++)
-                    if (f1Name[i] != f2Name[i])
-                        return f1Name.charCodeAt(i) - f2Name.charCodeAt(i);
-                return f1Name.length - f2Name.length;
-            });
-            this.files = res;
-            // 回到页头
-            document.body.scrollTop = document.documentElement.scrollTop = 0;
-        },
-        toggleShowHidden() {
-            this.showHidden = !this.showHidden;
-            localStorage.setItem('showHidden', this.showHidden);
-        },
-        folderEnter(folderName) {
-            // 第一层路径
-            this.pagePath.push(folderName.endsWith('/') ? folderName : (folderName + '/'));
-            this.getFiles();
-        },
-        folderLeave() {
-            if (this.pagePath.length <= 1) {
-                return;
-            }
-            this.pagePath.pop();
-            this.getFiles();
-        },
-        gotoPagePath(idx) {
-            idx = Math.max(0, idx);
-            while (this.pagePath.length > (idx+1)) {
-                this.pagePath.pop();
-            }
-            this.getFiles();
-        },
-        getPagePath() {
-            return this.pagePath.join('').replace("//", "/");
-        },
-        clickName(row) {
-            if (row.fsType == FS_TYPE.FOLDER) {
-                this.folderEnter(row.name);
-                return;
-            }
-            if (!row.fsType)
-                return alert("暂不支持当前格式.");
-            window.open(`${FS_OPEN[row.fsType]}#${row.path}`);
-        },
-        openText(row) {
-            window.open(`${FS_OPEN[FS_TYPE.TEXT]}#${row.path}`);
-        },
-        downloadFile(fileName) {
-            location.href = downUrl(this.getPagePath() + fileName);
-        },
-        async uploadFile(batch = false) {
-            if (this.pagePath.length < 1) {
-                this.msg = '请先进入一个目录';
-                return;
-            }
-            let files = await fileChooser(null, batch), msgList = [];
-            if (!batch) {
-                this.upload(files, msg => this.msg = msg);
-                return;
-            }
-            for (let i = 0; i < files.length; i++) {
-                msgList[i] = `${files[i].name} <mrun>waiting...</mrun>`;
-            }
-            this.msgList = msgList;
-            for (let i = 0; i < files.length; i++) {
-                await this.upload(files[i], msg => this.msgList[i] = msg );
-            };
-        },
-        async upload(file, progress) {
-            let formData = new FormData();
-            formData.append("dir", '/home/liuyao' + this.getPagePath());
-            formData.set("filename", file.name);
-            formData.set("id", uuid());
-            let start = 0, end, idx = 1, res;
-            do {
-                end = Math.min(file.size, start + this.partSize);
-                formData.set("isLastPart", end >= file.size);
-                formData.set("file", file.slice(start, end));
-                res = await fileUpload("/bs-api/fs/uploadBigFile", formData, {
-                    progress: e => {
-                        progress(`${file.name} <mrun>${(start + e.loaded) / file.size * 100 | 0}%</mrun>`);
-                    }
-                });
-                if('success' != res) {
-                    progress(`${file.name} <mer>${res}</mer>`);
-                    return;
-                }
-                start += this.partSize;
-                idx++;
-            } while (start < file.size);
-            progress(`${file.name} <mok>success</mok>`);
-        },
-        getFilePreview(fsType, filepath) {
-            let purl = openUrl(filepath);
-            switch(fsType) {
-                case FS_TYPE.FOLDER: return '-';
-                case FS_TYPE.IMAGE:
-                    return `<img class="preview" src="${purl}">`;
-                case FS_TYPE.VIDEO:
-                    let lastIndex = purl.lastIndexOf('/');
-                    let result = `${purl.slice(0, lastIndex)}/.vpr/${purl.slice(lastIndex + 1)}.jpg`;
-                    return `<img class="preview" src="${result}">`;
-                    // return `<img class="preview"
-                    // src="${apiPath}/fs/videoPic?path=${encodeURIComponent(filepath)}">`;
-                default: return fsType;
-            }
-        },
-    },
-}).mount("#app");
-
-function calcFileLength(len) {
-    let lenUnit = ['B', 'K', 'M', 'G', 'T'];
-    let lenUnitIdx = 0;
-    for (; len > 1024 && lenUnitIdx < lenUnit.length; lenUnitIdx++) len /= 1024;
-    len += '';
-    let pointIdx = len.indexOf(".") + 3; // . 不被截取
-    return ((pointIdx < 0 || pointIdx > len.length)  
-        ? len  : len.substring(0, pointIdx)) + lenUnit[lenUnitIdx];
-}
-function dateFormat(sec) {
-    DATE_TEMP.setTime(sec * 1000);
-    const year = DATE_TEMP.getFullYear();
-    const month = String(DATE_TEMP.getMonth() + 1).padStart(2, '0');
-    const day = String(DATE_TEMP.getDate()).padStart(2, '0');
-    const hours = String(DATE_TEMP.getHours()).padStart(2, '0');
-    const minutes = String(DATE_TEMP.getMinutes()).padStart(2, '0');
-    const seconds = String(DATE_TEMP.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-function fsMimeType(suffix) {
-    switch (suffix || '') {
-        case 'webp':
-        case 'png':
-        case 'jpeg':
-        case 'jpg':
-        case 'svg':
-        case 'gif': return FS_TYPE.IMAGE;
-        case 'mkv':
-        case 'm4v':
-        case 'webm':
-        case 'mp4': return FS_TYPE.VIDEO;
-        case 'txt':
-        case 'md':
-        case 'properties':
-        case 'conf':
-        case 'xml':
-        case 'desktop':
-        case 'log': return FS_TYPE.TEXT;
-        default: return '';
-    }
-}
-
-function getFileSuffix(nameOrPath) {
-    // 从后往前数第几个
-    let backNoTypeMap = {2: ['tar']};
-    let split = nameOrPath.split('.');
-    if (split.length < 2) {
-        return '-';
-    }
-    for (const len in backNoTypeMap) {
-        for (let i = 0; i < backNoTypeMap[len].length; i++) {
-            if (split[split.length - len] == backNoTypeMap[len][i]) {
-                return split.slice(split.length-len).join('.');
-            }
-        }
-    }
-    return split[split.length-1];
-}
-</script>
+<script src="js/config.js"></script>
+<!-- <script>includeCss('css/main.css', 'css/main-phone.css?v=1.9')</script> -->
+<script src="js/vue3.global.js"></script>
+<script src="js/main.js"></script>
 
 <!--<script src="https://resource.liuyao.link/js/effect/mouseGerm.js"></script>-->
 <!--<script src="https://resource.liuyao.link/js/effect/bgRgbDown.js"></script>-->
