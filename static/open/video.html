@@ -2,26 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1">
     <title>OPEN FILE</title>
     <style>
         html, body, #app {
             height: 100%;
             overflow: hidden;
             margin: 0;
-        }
-
-        .btns {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            opacity: 0;
-        }
-        body:hover .btns {
-            opacity: 1;
-        }
-        .btns * {
-            font-size: 4vw;
-            border: solid 1px #c3c3c3;
         }
         video {
             object-fit: contain;
@@ -46,20 +33,59 @@
             left: calc(100vw / 2 - 100vh / 2);
             top: calc(100vh / 2 - 100vw / 2);
         }
-        
+        #msg {
+            position: absolute;
+            top: 15px;
+            left: 0px;
+            z-index: 9;
+            color: white;
+            font-size: 10px;
+        }
+        #file_name {
+            width: 100%;
+            font-size: 10px;
+            font-weight: bold;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            z-index: 9;
+            color: white;
+            white-space: nowrap;    /* 强制一行显示 */
+            overflow: hidden;       /* 溢出内容隐藏 */
+            text-overflow: ellipsis; /* 超出显示省略号 */
+            --bg-color: #703a01;
+            background: linear-gradient(to right, 
+                var(--bg-color) 0%, var(--bg-color) var(--bg-per), 
+                transparent var(--bg-per), transparent 100%);
+        }
+        body:hover .controls {
+            opacity: 1;
+        }
+        .controls {
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+            opacity: 0;
+        }
+        .controls * {
+            font-size: 20px;
+            border: solid 1px #c3c3c3;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body><div id="app">
-    <video id="vdo" controls :class="videoClass" :style="{rotate: videoRotate+'deg'}">
+    <video id="vdo" :class="videoClass" :style="{rotate: videoRotate+'deg'}">
         <source type="video/mp4" v-for="(row, i) in source" :src="row">
     </video>
-    <div class="btns">
+    <div class="controls">
         <button type="button" onclick="loop()"
             :style="{backgroundColor: videoLoop ? '#00ff51' : ''}">loop</button>
-        <br><button type="button" onclick="rotate()">{{videoRotate}}°</button>
+        <button type="button" onclick="rotate()">{{videoRotate}}°</button>
     </div>
     <div class="time" v-show="mouseType == 'progress'">{{timeCur}}</div>
-    <span id="msg" style="color: white;position: fixed; left: 0px; top: 0px; z-index: 99;"></span>
+    <span id="msg"></span>
+    <div id="file_name" style="--bg-per:0%">{{timeCur}}/{{timeTotal}} {{title}} <span></span></div>
 
 </div></body>
 
@@ -97,8 +123,9 @@
     const vm = Vue.createApp({
         data() {
             return {
+                title: document.title,
                 source: [openUrl(filePath)],
-                timeCur: '',
+                timeCur: '0:00',
                 timeTotal: '',
                 speedList: speed,
                 speedIdx: 2,
@@ -122,6 +149,11 @@
         progressPerPxRatio = Math.min(vdo.duration/15/60, 1);
         vm.timeTotal = formatTime(vdo.duration);
         e.target.volume = isMobile() ? 1 : 0.1;
+    });
+    vdo.addEventListener('timeupdate', e => {
+        let per = (vdo.currentTime / vdo.duration * 100).toFixed(1);
+        file_name.style.setProperty('--bg-per', `${per}%`);
+        vm.timeCur = formatTime(vdo.currentTime);
     });
 
     (async function init() {
@@ -227,25 +259,29 @@
         } else {
             vdo.currentTime += 5;
         }
-        showMsg(`mouseClick: ${e.detail} / ${e.clientX} / ${wsplit}`);
+        // showMsg(`mouseClick: ${e.detail} / ${e.clientX} / ${wsplit}`);
     }
 
-    document.addEventListener('touchstart', e => mouseStart(e.touches[0]));
-    document.addEventListener('mousedown', e => mouseStart(e));
-    document.addEventListener('touchmove', e => mouseMove(e.touches[0]));
-    document.addEventListener('mousemove', e => mouseMove(e));
-    document.addEventListener('touchend', e => mouseEnd(e.changedTouches[0]));
-    document.addEventListener('mouseup', mouseEnd);
+    if (isMobile()) {
+        vdo.addEventListener('touchstart', e => mouseStart(e.touches[0]));
+        vdo.addEventListener('touchmove', e => mouseMove(e.touches[0]));
+        vdo.addEventListener('touchend', e => mouseEnd(e.changedTouches[0]));
+        // 禁用手机长按打开右键菜单
+        vdo.addEventListener('contextmenu', e => e.preventDefault());
+    } else {
+        vdo.addEventListener('mousedown', e => mouseStart(e));
+        vdo.addEventListener('mousemove', e => mouseMove(e));
+        vdo.addEventListener('mouseup', mouseEnd);
+    }
+
     // 禁用点击视频播放
     vdo.addEventListener('click', e => {
          e.preventDefault();
          console.log('click');
     });
-    // 禁用手机长按打开右键菜单
-    vdo.addEventListener('contextmenu', e => e.preventDefault());
 
     function showMsg(msg) {
-        document.getElementById('msg').innerText = msg;
+        document.getElementById('msg').innerHTML = msg;
     }
 </script>
 </html>

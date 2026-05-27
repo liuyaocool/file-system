@@ -159,7 +159,7 @@ const vm = Vue.createApp({
             //     left: e.currentTarget.scrollLeft - e.deltaY * 2,
             //     behavior: 'smooth'  // 平滑滚动
             // });
-            e.currentTarget.scrollLeft -= e.deltaY
+            e.currentTarget.scrollLeft += e.deltaY
         },
         downloadFile(fileName) {
             location.href = downUrl(this.getPagePath() + fileName);
@@ -278,6 +278,5 @@ function calcNameLen(name) {
     for (let i = 0; i < name.length; i++) {
         sum += name.charCodeAt(i) < 127 && name.charCodeAt(i) > 31 ? 1 : 2;
     }
-    console.log(`${sum} ${name}`)
     return sum;
 }

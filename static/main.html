@@ -21,7 +21,8 @@
         <span @click="sortClick('name')" class="name-btn icon" :class="getSortIcon('name')">名称</span>
         <span @click="sortClick('size')" class="name-btn icon" :class="getSortIcon('size')">大小</span>
         <span @click="sortClick('time')" class="name-btn icon" :class="getSortIcon('time')">时间</span>
-        <span v-for="(row, i) in pagePath" class="folder path" @click="gotoPagePath(i)">{{row}}</span>
+        <br v-if="isMobile">
+        <span v-for="(row, i) in pagePath" class="folder path" :class="i == 0 ? 'first-path' : ''" @click="gotoPagePath(i)">{{row}}</span>
         <span v-html="msg"></span>
     </div>
     <div v-if="picMode" class="pic-body" @wheel="picBodyScroll">
@@ -43,7 +44,7 @@
         </colgroup>
         <thead class="fix-th">
             <tr><td colspan="6" class="top">
-                <span v-for="(row, i) in pagePath" class="folder path" @click="gotoPagePath(i)">{{row}}</span> 
+                <span v-for="(row, i) in pagePath" class="folder path" :class="i == 0 ? 'first-path' : ''" @click="gotoPagePath(i)">{{row}}</span> 
                 <span v-html="msg"></span>
             </td></tr>
             <tr class="th-bg">
@@ -87,7 +88,7 @@
 </div>
 </body>
 
-<script src="js/config.js"></script>
+<script src="js/config.js?1"></script>
 <!-- <script>includeCss('css/main.css', 'css/main-phone.css?v=1.9')</script> -->
 <script src="js/vue3.global.js"></script>
 <script src="js/main.js"></script>
