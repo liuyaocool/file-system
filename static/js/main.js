@@ -109,7 +109,7 @@ const vm = Vue.createApp({
             }
         },
         getSortIcon(column) {
-            return this.sortColumn == column ? (this.sortIsAsc ? 'icon-sort-up' : 'icon-sort-down') : '';
+            return this.sortColumn == column ? (this.sortIsAsc ? 'icon icon-sort-up' : 'icon icon-sort-down') : '';
         },
         toggleShowHidden() {
             this.showHidden = !this.showHidden;

@@ -7,6 +7,10 @@ function isMobile() {
     return /Mobi/.test(navigator.userAgent);
 }
 
+function isTouch() {
+  return navigator.maxTouchPoints > 0;
+}
+
 function includeCss(pcLink, h5Link) {
     let dom = document.createElement('link');
     dom.rel = 'stylesheet';

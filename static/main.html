@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <!-- 初始缩放 -->
-    <meta name="viewport" content="initial-scale=0.7">
+    <meta name="viewport" content="initial-scale=0.6">
     <title>FILE SYSTEM</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/theme.css"/>
@@ -18,9 +18,9 @@
         <button class="upload" @click="uploadFile(true)">上传</button>
         <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
         <span @click="togglePicMode" class="name-btn" :class="picMode ? 'name-btn-sel' : ''">图片模式</span>
-        <span @click="sortClick('name')" class="name-btn icon" :class="getSortIcon('name')">名称</span>
-        <span @click="sortClick('size')" class="name-btn icon" :class="getSortIcon('size')">大小</span>
-        <span @click="sortClick('time')" class="name-btn icon" :class="getSortIcon('time')">时间</span>
+        <span @click="sortClick('name')" class="name-btn" :class="getSortIcon('name')">名称</span>
+        <span @click="sortClick('size')" class="name-btn" :class="getSortIcon('size')">大小</span>
+        <span @click="sortClick('time')" class="name-btn" :class="getSortIcon('time')">时间</span>
         <br v-if="isMobile">
         <span v-for="(row, i) in pagePath" class="folder path" :class="i == 0 ? 'first-path' : ''" @click="gotoPagePath(i)">{{row}}</span>
         <span v-html="msg"></span>
@@ -50,14 +50,14 @@
             <tr class="th-bg">
                 <!-- <td>预览</td> -->
                 <td class="col-name">
-                    <span @click="sortClick('name')">名称</span>
+                    <span @click="sortClick('name')" :class="getSortIcon('name')">名称</span>
                     <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
                     <span @click="togglePicMode" class="name-btn" :class="picMode ? 'name-btn-sel' : ''">图片模式</span>
                     <!-- <button class="upload" @click="uploadFile()">上传</button>  -->
                     <button class="upload" @click="uploadFile(true)">上传</button> 
                 </td>
-                <td><span @click="sortClick('size')">大小</span></td>
-                <td v-if="!isMobile"><span @click="sortClick('time')">修改时间</span></td>
+                <td><span @click="sortClick('size')" :class="getSortIcon('size')">大小</span></td>
+                <td v-if="!isMobile"><span @click="sortClick('time')" :class="getSortIcon('time')">修改时间</span></td>
                 <td>操作</td>
             </tr>
             <tr><td class="path-prev folder col-name" @click="folderLeave()" colspan="5">..</td></tr>
