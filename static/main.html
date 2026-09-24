@@ -12,28 +12,47 @@
     <link rel="stylesheet" href="css/main.css"/>
 </head>
 <body>
-<div id="app" class="pic-main">
+<div id="app">
     <link v-if="isMobile" rel="stylesheet" href="css/phone.css"/>
-    <div v-if="picMode" class="pic-header">
-        <button class="upload" @click="uploadFile(true)">上传</button>
-        <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
-        <span @click="togglePicMode" class="name-btn" :class="picMode ? 'name-btn-sel' : ''">图片模式</span>
-        <span @click="sortClick('name')" class="name-btn" :class="getSortIcon('name')">名称</span>
-        <span @click="sortClick('size')" class="name-btn" :class="getSortIcon('size')">大小</span>
-        <span @click="sortClick('time')" class="name-btn" :class="getSortIcon('time')">时间</span>
-        <br v-if="isMobile">
-        <span v-for="(row, i) in pagePath" class="folder path" :class="i == 0 ? 'first-path' : ''" @click="gotoPagePath(i)">{{row}}</span>
-        <span v-html="msg"></span>
-    </div>
-    <div v-if="picMode" class="pic-body" @wheel="picBodyScroll">
-        <div v-for="(row, i) in files" class="pic-item">
-            <div class="pic-preview" @click="clickName(row)" v-html="row.preview"></div>
-            <div v-if="!row.dir" class="pic-size">{{row.sizeStr}}</div>
-            <!-- <div class="pic-time">{{row.timeStr}}</div> -->
-            <div class="pic-name">{{row.name}}</div>
+    <div v-if="mode == 'pic'" class="pic-main">
+        <div class="pic-header">
+            <button class="upload" @click="uploadFile()">上传</button>
+            <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
+            <span @click="switchMode('list')"   class="name-btn" :class="mode == 'list'   ? 'name-btn-sel' : ''">列表</span>
+            <span @click="switchMode('column')" class="name-btn" :class="mode == 'column' ? 'name-btn-sel' : ''">分栏</span>
+            <span @click="switchMode('pic')"    class="name-btn" :class="mode == 'pic'    ? 'name-btn-sel' : ''">图片</span>
+            <span @click="sortClick('name')" class="name-btn" :class="getSortIcon('name')">名称</span>
+            <span @click="sortClick('size')" class="name-btn" :class="getSortIcon('size')">大小</span>
+            <span @click="sortClick('time')" class="name-btn" :class="getSortIcon('time')">时间</span>
+            <br v-if="isMobile">
+            <span v-for="(row, i) in pagePath" class="folder path" :class="i == 0 ? 'first-path' : ''" @click="gotoPagePath(i)">{{row}}</span>
+            <span v-html="msg"></span>
+        </div>
+        <div class="pic-body" @wheel="picBodyScroll">
+            <div v-for="(row, i) in files" class="pic-item">
+                <div class="pic-preview" @click="clickName(row)" v-html="row.preview"></div>
+                <div v-if="!row.dir" class="pic-size">{{row.sizeStr}}</div>
+                <!-- <div class="pic-time">{{row.timeStr}}</div> -->
+                <div class="pic-name">{{row.name}}</div>
+            </div>
         </div>
     </div>
-    <table v-if="!picMode" id="main">
+    <div v-if="mode == 'column'">
+        <div class="pic-header">
+            <button class="upload" @click="uploadFile()">上传</button>
+            <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
+            <span @click="switchMode('list')"   class="name-btn" :class="mode == 'list'   ? 'name-btn-sel' : ''">列表</span>
+            <span @click="switchMode('column')" class="name-btn" :class="mode == 'column' ? 'name-btn-sel' : ''">分栏</span>
+            <span @click="switchMode('pic')"    class="name-btn" :class="mode == 'pic'    ? 'name-btn-sel' : ''">图片</span>
+            <span @click="sortClick('name')" class="name-btn" :class="getSortIcon('name')">名称</span>
+            <span @click="sortClick('size')" class="name-btn" :class="getSortIcon('size')">大小</span>
+            <span @click="sortClick('time')" class="name-btn" :class="getSortIcon('time')">时间</span>
+            <span v-html="msg"></span>
+        </div>
+        <div v-for=""></div>
+
+    </div>
+    <table v-if="mode == 'list'" id="main">
         <!-- 添加这个dom 解决首行跨列导致的宽度失效 -->
         <colgroup>
             <!-- <col class="col-preview"> -->
@@ -52,9 +71,10 @@
                 <td class="col-name">
                     <span @click="sortClick('name')" :class="getSortIcon('name')">名称</span>
                     <span @click="toggleShowHidden" class="name-btn" :class="showHidden ? 'name-btn-sel' : ''">显隐</span>
-                    <span @click="togglePicMode" class="name-btn" :class="picMode ? 'name-btn-sel' : ''">图片模式</span>
-                    <!-- <button class="upload" @click="uploadFile()">上传</button>  -->
-                    <button class="upload" @click="uploadFile(true)">上传</button> 
+                    <span @click="mode = 'list'"   class="name-btn" :class="mode == 'list'   ? 'name-btn-sel' : ''">列表</span>
+                    <span @click="mode = 'column'" class="name-btn" :class="mode == 'column' ? 'name-btn-sel' : ''">分栏</span>
+                    <span @click="mode = 'pic'"    class="name-btn" :class="mode == 'pic'    ? 'name-btn-sel' : ''">图片</span>
+                    <button class="upload" @click="uploadFile()">上传</button> 
                 </td>
                 <td><span @click="sortClick('size')" :class="getSortIcon('size')">大小</span></td>
                 <td v-if="!isMobile"><span @click="sortClick('time')" :class="getSortIcon('time')">修改时间</span></td>
@@ -91,7 +111,7 @@
 <script src="js/config.js?1"></script>
 <!-- <script>includeCss('css/main.css', 'css/main-phone.css?v=1.9')</script> -->
 <script src="js/vue3.global.js"></script>
-<script src="js/main.js"></script>
+<script src="js/main.js?5"></script>
 
 <!--<script src="https://resource.liuyao.link/js/effect/mouseGerm.js"></script>-->
 <!--<script src="https://resource.liuyao.link/js/effect/bgRgbDown.js"></script>-->

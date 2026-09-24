@@ -1,7 +1,70 @@
 const apiPath = "/fs-api"
-    ,openUrl = filepath => `/fs-open${filepath.replaceAll("&", "%26")}`
-    ,downUrl = filepath => `/fs-down${filepath.replaceAll("&", "%26")}`
+    // path: /test/xxx.png
+    ,openUrl = path => `/fs-open${path.replaceAll("&", "%26")}`
+    ,downUrl = path => `/fs-down${path.replaceAll("&", "%26")}`
+    ,listUrl = path => `${apiPath}/list_file/${urlSafeBase64(path)}`
+    ,FS_TYPE = {
+        FOLDER: 'folder',
+        IMAGE: 'image',
+        VIDEO: 'video',
+        TEXT: 'text',
+        PDF: 'pdf',
+        ZIP: 'zip',
+        DOC: 'doc',
+        EXCEL: 'excel',
+        PPT: 'ppt',
+        NOT_SUPPORT: 'not_support'
+    }
+    ,FS_TYPE_SUFFIX = {}
 ;
+
+FS_TYPE_SUFFIX[FS_TYPE.IMAGE] = ['.webp', '.png', '.jpeg', '.jpg', '.svg', '.gif'];
+FS_TYPE_SUFFIX[FS_TYPE.VIDEO] = ['.mkv', '.m4v', '.webm', '.mp4'];
+FS_TYPE_SUFFIX[FS_TYPE.TEXT ] = [
+    '.txt', '.md', '.properties', '.conf', '.xml', '.desktop', '.log', '.ini'
+];
+FS_TYPE_SUFFIX[FS_TYPE.PDF  ] = ['.pdf'];
+FS_TYPE_SUFFIX[FS_TYPE.ZIP  ] = ['.zip', '.rar'];
+FS_TYPE_SUFFIX[FS_TYPE.DOC  ] = ['.doc', '.docx'];
+FS_TYPE_SUFFIX[FS_TYPE.EXCEL] = ['.xls', '.xlsx'];
+FS_TYPE_SUFFIX[FS_TYPE.PPT  ] = ['.ppt'];
+
+function openFile(isNewPage, openPage, filePath, sendData) {
+    setSendData(sendData);
+    let openPageUrl = `${openPage}?${encodeURIComponent(filePath)}`;
+    if (isNewPage) {
+        window.open(openPageUrl);
+    } else {
+        location.href = openPageUrl;
+    }
+}
+
+function setSendData(sendData) {
+    if (sendData) {
+        localStorage.setItem('sendData', JSON.stringify(sendData));
+    }
+
+}
+function getSendData() {
+    let sendData = localStorage.getItem('sendData');
+    return sendData ? JSON.parse(sendData) : null;
+}
+
+/**
+ * return [FS_TYPE, suffixStr]
+ */
+function fsMimeType(nameOrPath, isDir = false) {
+    if(isDir) return [FS_TYPE.FOLDER, '-'];
+    nameOrPath = nameOrPath.toLowerCase();
+    for(const k in FS_TYPE_SUFFIX) {
+        for (var i = 0; i < FS_TYPE_SUFFIX[k].length; i++) {
+            if(nameOrPath.endsWith(FS_TYPE_SUFFIX[k][i])) {
+                return [k, FS_TYPE_SUFFIX[k][i]];
+            }
+        }
+    }
+    return [FS_TYPE.NOT_SUPPORT, '-'];
+}
 
 function isMobile() {
     return /Mobi/.test(navigator.userAgent);

@@ -20,7 +20,7 @@
 <img id="imgDoc">
 <script src="../js/config.js"></script>
 <script>
-    const filePath = location.hash.substring(1);
+    const filePath = location.search.substring(1);
     document.title = decodeURIComponent(filePath.substr(filePath.lastIndexOf('/') + 1));
     imgDoc.src = openUrl(filePath);
 </script>

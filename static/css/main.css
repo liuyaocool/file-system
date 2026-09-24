@@ -54,10 +54,6 @@
     word-break: break-all;
 }
 
-tbody > tr:nth-child(even of :not([style*="display: none"])) {
-    background-color: #343434;
-}
-
 #main {
     /* 超出宽度自动隐藏 */
     table-layout: fixed;

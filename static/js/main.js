@@ -1,18 +1,8 @@
 
 const PART_SIZE = 5*1024*1024;
-const FS_TYPE = {
-    FOLDER: 'folder',
-    IMAGE: 'image',
-    VIDEO: 'video',
-    TEXT: 'text',
-    PDF: 'pdf',
-    ZIP: 'zip',
-    DOC: 'doc',
-    EXCEL: 'excel',
-    PPT: 'ppt',
-};
 const FS_OPEN = {};
 const DATE_TEMP = new Date();
+// 内网ip访问 用/会出问题
 FS_OPEN[FS_TYPE.IMAGE] = 'open/img.html';
 FS_OPEN[FS_TYPE.TEXT] = 'open/text.html';
 FS_OPEN[FS_TYPE.VIDEO] = 'open/video.html';
@@ -20,7 +10,7 @@ FS_OPEN[FS_TYPE.VIDEO] = 'open/video.html';
 const vm = Vue.createApp({
     data() {
         // let p = location.hash ? location.hash.slice(1) : localStorage.getItem('path');
-        let p = location.hash ? decodeURIComponent(location.hash.slice(1, -1)).trim() : "";
+        let p = location.search ? decodeURIComponent(location.search).slice(1, -1).trim() : "";
         let pagePath = ['/'];
         if(p) {
             pagePath = p.split('/');
@@ -33,6 +23,7 @@ const vm = Vue.createApp({
             sortIsAsc: true,
             isMobile: isMobile(),
             picMode: 'true' === localStorage.getItem('picMode'),
+            mode: localStorage.getItem('mode') || 'list',
             msg: '',
             msgList: [],
             showHidden: 'true' === localStorage.getItem('showHidden'),
@@ -44,7 +35,7 @@ const vm = Vue.createApp({
             } */
             allFiles: [],
             normalFiles: [],
-                
+            fileTree: []
         }
     },
     computed: {
@@ -53,20 +44,36 @@ const vm = Vue.createApp({
             return this.showHidden ? this.allFiles : this.normalFiles;
         },
     },
+    watch: {
+        pagePath: {
+            // splice方式 在这里触发时nv和ov是同一个引用都是nv值
+            handler(nv, ov) {
+                // history.pushState(state, title, url);
+                history.replaceState(null, '', '?' + encodeURIComponent(this.getPagePath()));
+            },
+            deep: true
+        }
+    },
     created() {
         this.getFiles();
+        window.addEventListener("popstate", e => {
+            // if (this.pagePath.length <= 1 && confirm('离开页面?')) {
+            // }
+        });
     },
     methods: {
         async getFiles() {
-            let pp = location.hash = this.getPagePath();
-            pp = pp && !pp.endsWith('/') ? (pp + '/') : (pp || '/');
+            let pp = this.getPagePath();
+            // pp = pp && !pp.endsWith('/') ? (pp + '/') : (pp || '/');
             localStorage.setItem('path', pp);
-            let res = await (await fetch(`${apiPath}/list_file/${urlSafeBase64(pp)}`)).json();
+            let res = await ( await fetch(listUrl(pp)) ).json();
+            let suff;
             for (let i = 0; i < res.length; i++) {
+                suff = fsMimeType(res[i].name, res[i].dir);
                 res[i].sizeStr = res[i].dir ? '-' : calcFileLength(res[i].size);
                 res[i].timeStr = dateFormat(res[i].time);
-                res[i].suffix = res[i].dir ? '-' : getFileSuffix(res[i].name);
-                res[i].fsType = res[i].dir ? FS_TYPE.FOLDER : fsMimeType(res[i].suffix);
+                res[i].suffix = suff[1];
+                res[i].fsType = suff[0];
                 res[i].path = `${this.getPagePath()}${res[i].name}`;
                 res[i].preview = this.getFilePreview(res[i].fsType, res[i].path);
                 res[i].nameLen = calcNameLen(res[i].name);
@@ -119,8 +126,11 @@ const vm = Vue.createApp({
             this.picMode = !this.picMode;
             localStorage.setItem('picMode', this.picMode);
         },
+        switchMode(mode) {
+            this.mode = mode;
+            localStorage.setItem('mode', mode);
+        },
         folderEnter(folderName) {
-            // 第一层路径
             this.pagePath.push(folderName + "/");
             this.getFiles();
         },
@@ -132,26 +142,33 @@ const vm = Vue.createApp({
             this.getFiles();
         },
         gotoPagePath(idx) {
-            idx = Math.max(0, idx);
-            while (this.pagePath.length > (idx+1)) {
-                this.pagePath.pop();
-            }
+            console.log(idx);
+            this.pagePath.splice(Math.max(1, idx + 1));
             this.getFiles();
         },
         getPagePath() {
-            return this.pagePath.join('').replace("//", "/");
+            return this.pagePath.join('');
         },
         clickName(row) {
             if (row.fsType == FS_TYPE.FOLDER) {
                 this.folderEnter(row.name);
                 return;
             }
-            if (!row.fsType)
+            if (!FS_OPEN[row.fsType])
                 return alert("暂不支持当前格式.");
-            window.open(`${FS_OPEN[row.fsType]}#${row.path}`);
+            let sendData = null;
+            switch(row.fsType) {
+                case FS_TYPE.VIDEO:
+                    sendData = [];
+                    this.files.forEach(f => {
+                        if (f.fsType == FS_TYPE.VIDEO) sendData.push(f.name);
+                    })
+                    break;
+            }
+            openFile(true, FS_OPEN[row.fsType], row.path, sendData);
         },
         openText(row) {
-            window.open(`${FS_OPEN[FS_TYPE.TEXT]}#${row.path}`);
+            openFile(true, FS_OPEN[FS_TYPE.TEXT], row.path);
         },
         picBodyScroll(e) {
             // console.log(e);
@@ -164,7 +181,7 @@ const vm = Vue.createApp({
         downloadFile(fileName) {
             location.href = downUrl(this.getPagePath() + fileName);
         },
-        async uploadFile(batch = false) {
+        async uploadFile(batch = true) {
             if (this.pagePath.length < 1) {
                 this.msg = '请先进入一个目录';
                 return;
@@ -192,7 +209,7 @@ const vm = Vue.createApp({
                 end = Math.min(file.size, start + PART_SIZE);
                 formData.set("isLastPart", end >= file.size);
                 formData.set("file", file.slice(start, end));
-                res = await fileUpload("/bs-api/fs/uploadBigFile", formData, {
+                res = await fileUpload("/bs/fs/uploadBigFile", formData, {
                     progress: e => {
                         progress(`${file.name} <mrun>${(start + e.loaded) / file.size * 100 | 0}%</mrun>`);
                     }
@@ -216,7 +233,7 @@ const vm = Vue.createApp({
                     // let result = `${purl.slice(0, lastIndex)}/.vpr/${purl.slice(lastIndex + 1)}.jpg`;
                     // return `<img class="preview" src="${result}">`;
                     // /bs-api/fs
-                    return `<img src="/bs-api/fs/videoPic?path=${encodeURIComponent('/home/liuyao'+filepath)}">`;
+                    return `<img src="/bs/fs/videoPic?path=${encodeURIComponent('/home/liuyao'+filepath)}">`;
                 default: return '<span class="icon icon-file01"></span>';
             }
         },
@@ -231,46 +248,6 @@ function calcFileLength(len) {
         len /= unitSize;
     }
     return (len * 1.00).toFixed(fixed) * 1 + 'T';
-}
-
-function fsMimeType(suffix = '') {
-    switch (suffix.toLowerCase()) {
-        case 'webp':
-        case 'png':
-        case 'jpeg':
-        case 'jpg':
-        case 'svg':
-        case 'gif': return FS_TYPE.IMAGE;
-        case 'mkv':
-        case 'm4v':
-        case 'webm':
-        case 'mp4': return FS_TYPE.VIDEO;
-        case 'txt':
-        case 'md':
-        case 'properties':
-        case 'conf':
-        case 'xml':
-        case 'desktop':
-        case 'log': return FS_TYPE.TEXT;
-        default: return '';
-    }
-}
-
-function getFileSuffix(nameOrPath) {
-    // 从后往前数第几个
-    let backNoTypeMap = {2: ['tar']};
-    let split = nameOrPath.split('.');
-    if (split.length < 2) {
-        return '-';
-    }
-    for (const len in backNoTypeMap) {
-        for (let i = 0; i < backNoTypeMap[len].length; i++) {
-            if (split[split.length - len] == backNoTypeMap[len][i]) {
-                return split.slice(split.length-len).join('.');
-            }
-        }
-    }
-    return split[split.length-1];
 }
 
 function calcNameLen(name) {
