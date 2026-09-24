@@ -192,7 +192,7 @@ const vm = Vue.createApp({
                 return;
             }
             for (let i = 0; i < files.length; i++) {
-                msgList[i] = `${files[i].name} <mrun>waiting...</mrun>`;
+                msgList[i] = `<mrun>waiting...</mrun> ${files[i].name}`;
             }
             this.msgList = msgList;
             for (let i = 0; i < files.length; i++) {
@@ -211,17 +211,17 @@ const vm = Vue.createApp({
                 formData.set("file", file.slice(start, end));
                 res = await fileUpload("/bs/fs/uploadBigFile", formData, {
                     progress: e => {
-                        progress(`${file.name} <mrun>${(start + e.loaded) / file.size * 100 | 0}%</mrun>`);
+                        progress(`<mrun>${(start + e.loaded) / file.size * 100 | 0}%</mrun> ${file.name}`);
                     }
                 });
                 if('success' != res) {
-                    progress(`${file.name} <mer>${res}</mer>`);
+                    progress(`<mer>${res}</mer> ${file.name}`);
                     return;
                 }
                 start += PART_SIZE;
                 idx++;
             } while (start < file.size);
-            progress(`${file.name} <mok>success</mok>`);
+            progress(`<mok>success</mok> ${file.name}`);
         },
         getFilePreview(fsType, filepath) {
             let purl = openUrl(filepath);
