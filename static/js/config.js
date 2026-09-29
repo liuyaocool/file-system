@@ -21,14 +21,12 @@ const apiPath = "/fs-api"
 
 FS_TYPE_SUFFIX[FS_TYPE.IMAGE] = ['.webp', '.png', '.jpeg', '.jpg', '.svg', '.gif'];
 FS_TYPE_SUFFIX[FS_TYPE.VIDEO] = ['.mkv', '.m4v', '.webm', '.mp4'];
-FS_TYPE_SUFFIX[FS_TYPE.TEXT ] = [
-    '.txt', '.md', '.properties', '.conf', '.xml', '.desktop', '.log', '.ini'
-];
+FS_TYPE_SUFFIX[FS_TYPE.TEXT ] = ['.txt', '.md', '.properties', '.conf', '.log', '.ini'];
 FS_TYPE_SUFFIX[FS_TYPE.PDF  ] = ['.pdf'];
-FS_TYPE_SUFFIX[FS_TYPE.ZIP  ] = ['.zip', '.rar'];
+FS_TYPE_SUFFIX[FS_TYPE.ZIP  ] = ['.zip', '.rar', '.7z', '.tar.gz', 'tgz', '.tar.bz2', 'tbz2', '.tar.xz', 'txz'];
 FS_TYPE_SUFFIX[FS_TYPE.DOC  ] = ['.doc', '.docx'];
 FS_TYPE_SUFFIX[FS_TYPE.EXCEL] = ['.xls', '.xlsx'];
-FS_TYPE_SUFFIX[FS_TYPE.PPT  ] = ['.ppt'];
+FS_TYPE_SUFFIX[FS_TYPE.PPT  ] = ['.ppt', '.pptx'];
 
 function openFile(isNewPage, openPage, filePath, sendData) {
     setSendData(sendData);
