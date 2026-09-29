@@ -3,6 +3,7 @@ const apiPath = "/fs-api"
     ,openUrl = path => `/fs-open${path.replaceAll("&", "%26")}`
     ,downUrl = path => `/fs-down${path.replaceAll("&", "%26")}`
     ,listUrl = path => `${apiPath}/list_file/${urlSafeBase64(path)}`
+    ,videoPicUrl = path => `${apiPath}/video_pic/${urlSafeBase64(path)}`
     ,FS_TYPE = {
         FOLDER: 'folder',
         IMAGE: 'image',

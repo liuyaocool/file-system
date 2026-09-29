@@ -66,7 +66,13 @@ const vm = Vue.createApp({
             let pp = this.getPagePath();
             // pp = pp && !pp.endsWith('/') ? (pp + '/') : (pp || '/');
             localStorage.setItem('path', pp);
-            let res = await ( await fetch(listUrl(pp)) ).json();
+            let resp = await fetch(listUrl(pp));
+            let res = await resp.json();
+            if (200 != resp.status) {
+                this.allFiles = [{name: `${res.code}: ${res.msg}`}];
+                this.normalFiles = this.allFiles;
+                return;
+            }
             let suff;
             for (let i = 0; i < res.length; i++) {
                 suff = fsMimeType(res[i].name, res[i].dir);
@@ -229,11 +235,10 @@ const vm = Vue.createApp({
                 case FS_TYPE.FOLDER: return '<span class="icon icon-folder01"></span>';
                 case FS_TYPE.IMAGE: return `<img src="${purl}">`;
                 case FS_TYPE.VIDEO:
-                    // let lastIndex = purl.lastIndexOf('/');
-                    // let result = `${purl.slice(0, lastIndex)}/.vpr/${purl.slice(lastIndex + 1)}.jpg`;
-                    // return `<img class="preview" src="${result}">`;
-                    // /bs-api/fs
-                    return `<img src="/bs/fs/videoPic?path=${encodeURIComponent('/home/liuyao'+filepath)}">`;
+                    let lastIndex = purl.lastIndexOf('/');
+                    let result = `${purl.slice(0, lastIndex)}/.vpr/${purl.slice(lastIndex + 1)}.jpg`;
+                    fetch(videoPicUrl(filepath));
+                    return `<img class="preview" src="${result}">`;
                 default: return '<span class="icon icon-file01"></span>';
             }
         },
