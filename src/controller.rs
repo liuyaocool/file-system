@@ -16,8 +16,8 @@ pub async fn video_pic(Path(path): Path<String>) -> ApiResult<String> {
     view_path.push_str(&path[..(pos + 1)]);
     view_path.push_str(config::VIDEO_PIC_PATH);
     let view_folder = view_path.clone();
-    view_path.push_str(&path[pos + 1..]);
-    view_path.push_str(".jpg");
+    view_path.push_str(&path[(pos + 1)..]);
+    view_path.push_str(config::VIDEO_PIC_SUFFIX);
 
     if fs::exists(&view_path)? {
         return Ok(String::from("exist"));
@@ -25,34 +25,42 @@ pub async fn video_pic(Path(path): Path<String>) -> ApiResult<String> {
         fs::create_dir_all(&view_folder)?;
     }
     
-    let output = Command::new("ffprobe")
-        .args([
-            "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            &path,
-        ])
-        .output()?;
-    if !output.status.success() {
-        return Err(ApiError::Other(anyhow::anyhow!( "ffprobe 执行失败: {}", String::from_utf8_lossy(&output.stderr))));
-    }
-    let duration: f64 = String::from_utf8_lossy(&output.stdout).trim().parse()?;
-    let seek_time = (duration * 0.33) as i64;
+    // let output = Command::new("ffprobe")
+    //     .args([
+    //         "-v", "error",
+    //         "-show_entries", "format=duration",
+    //         "-of", "default=noprint_wrappers=1:nokey=1",
+    //         &path,
+    //     ])
+    //     .output()?;
+    // if !output.status.success() {
+    //     return Err(ApiError::Other(anyhow::anyhow!( "ffprobe 执行失败: {}", String::from_utf8_lossy(&output.stderr))));
+    // }
+    // let duration: f64 = String::from_utf8_lossy(&output.stdout).trim().parse()?;
+    // let seek_time = (duration * 0.33) as i64;
 
-    let status = Command::new("ffmpeg")
-        .args([
-            "-ss", &seek_time.to_string(),  // 跳到 33% 位置
-            "-i", &path,
-            "-loglevel", "quiet", // 完全静默
-            "-frames:v", "1",     // 只截一帧
-            "-c:v", "mjpeg",      // 使用 MJPEG 编码
-            "-q:v", "23",         // 质量（1-31，越小越好）
-            "-y",                 // 覆盖已存在文件
-            &view_path
-        ])
+    // let status = Command::new("ffmpeg")
+    //     .args([
+    //         "-ss", &seek_time.to_string(),  // 跳到 33% 位置
+    //         "-i", &path,
+    //         "-loglevel", "quiet", // 完全静默
+    //         "-frames:v", "1",     // 只截一帧
+    //         "-c:v", "mjpeg",      // 使用 MJPEG 编码
+    //         "-q:v", "23",         // 质量（1-31，越小越好）
+    //         "-y",                 // 覆盖已存在文件
+    //         &view_path
+    //     ])
+    //     .status()?;
+    // if !status.success() {
+    //     return Err(ApiError::Other(anyhow::anyhow!( "ffmpeg 截图失败: {}", String::from_utf8_lossy(&output.stderr))));
+    // }
+
+    let status = Command::new("ffmpegthumbnailer")
+        // 33％位置 宽度300px
+        .args(["-t", "33", "-s", "300", "-i", &path, "-o", &view_path])
         .status()?;
     if !status.success() {
-        return Err(ApiError::Other(anyhow::anyhow!( "ffmpeg 截图失败: {}", String::from_utf8_lossy(&output.stderr))));
+        return Err(ApiError::Other(anyhow::anyhow!( "ffmpegthumbnailer 截图失败")));
     }
     Ok(String::from("ok"))
 }
