@@ -19,30 +19,42 @@ const vm = Vue.createApp({
             }
         }
         return {
-            sortColumn: '',
+            filterText: '',
+            sortColumn: 'name',
             sortIsAsc: true,
+            sortList: [
+                { column: 'name', label: '名称', },
+                { column: 'size', label: '大小', },
+                { column: 'time', label: '时间', },
+            ],
             isMobile: isMobile(),
-            picMode: 'true' === localStorage.getItem('picMode'),
+            // isMobile: false,
             mode: localStorage.getItem('mode') || 'list',
+            modeList: [
+                { value: 'list',   label: '列表', },
+                { value: 'column', label: '分栏', },
+                { value: 'pic',    label: '图片', },
+            ],
             msg: '',
             msgList: [],
             showHidden: 'true' === localStorage.getItem('showHidden'),
             pagePath: pagePath, // every ends with '/'
             /**
-            { name, nameLen, size, sizeStr, time, timeStr, path, 
+            { name, size, time, link, dir,  // api返回字段
+                nameLen, sizeStr, timeStr, path, isHide
                 "suffix": "", // zip, tar.gz, tar.zst
                 "fsType": "", // FS_TYPE
             } */
             allFiles: [],
-            normalFiles: [],
+            files: [],
             fileTree: []
         }
     },
     computed: {
-        files() {
-            // 根据条件返回对应的数据源
-            return this.showHidden ? this.allFiles : this.normalFiles;
-        },
+        // files() {
+        //     // 根据条件返回对应的数据源
+        //     return this.showHidden ? this.allFiles : this.normalFiles;
+        // },
     },
     watch: {
         pagePath: {
@@ -52,7 +64,15 @@ const vm = Vue.createApp({
                 history.replaceState(null, '', '?' + encodeURIComponent(this.getPagePath()));
             },
             deep: true
-        }
+        },
+        showHidden(nv, ov) {
+            this.filesFilter();
+            this.filesSort();
+        },
+        filterText(nv, ov) {
+            this.filesFilter();
+            this.filesSort();
+        },
     },
     created() {
         this.getFiles();
@@ -77,21 +97,70 @@ const vm = Vue.createApp({
             for (let i = 0; i < res.length; i++) {
                 suff = fsMimeType(res[i].name, res[i].dir);
                 res[i].sizeStr = res[i].dir ? '-' : calcFileLength(res[i].size);
+                res[i].size = res[i].dir ? '0' : res[i].size;
                 res[i].timeStr = dateFormat(res[i].time);
                 res[i].suffix = suff[1];
                 res[i].fsType = suff[0];
                 res[i].path = `${this.getPagePath()}${res[i].name}`;
                 res[i].preview = this.getFilePreview(res[i].fsType, res[i].path);
                 res[i].nameLen = calcNameLen(res[i].name);
+                res[i].isHide = res[i].name[0] == '.';
             }
             this.allFiles = res;
-            this.normalFiles = res.filter(f => f.name[0] != '.');
-            this.reSort('name', 'asc');
+            // this.normalFiles = res.filter(f => f.name[0] != '.');
+            // this.reSort('name', 'asc');
+            this.filesFilter();
+            this.filesSort();
             // 回到页头
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         },
+        filesFilter() {
+            let hl_key_arr = hl_keys(this.filterText);
+            this.files = this.allFiles.filter(row => {
+                // .开头隐藏文件
+                if (!this.showHidden && row.isHide) return false;
+                // 文本过滤
+                if (hl_key_arr) {
+                    let n = row.name.toLowerCase();
+                    if(!hl_check(hl_key_arr, n)) return false;
+                    row.nameHtml = hl_replace(row.name, n, hl_key_arr);
+                } else {
+                    row.nameHtml = row.name;
+                }
+                return true;
+            });
+        },
+        filesSort() {
+            let compareName = (f1, f2) => {
+                let f1Name = f1.name.toLowerCase(),
+                    f2Name = f2.name.toLowerCase(),
+                    min = Math.min(f1Name.length, f2Name.length);
+                for (let i = 0; i < min; i++)
+                    if (f1Name[i] != f2Name[i])
+                        return f1Name.charCodeAt(i) - f2Name.charCodeAt(i);
+                return f1Name.length - f2Name.length;
+            };
+            this.files.sort((f1, f2) => {
+                // 不管升序降序 文件夹 和 .xxx 都要排前， 而且要文件夹优先
+                if (f1.dir !== f2.dir) return f1.dir ? -1 : 1;
+                if (f1.isHide !== f2.isHide) return f1.isHide ? -1 : 1;
+                // 尺寸排序 文件夹总以名字升序排序 不做升降
+                if (f1.dir && this.sortColumn == 'size') return compareName(f1, f2);
+                let compare = (f1, f2, column) => {
+                    switch (column) {
+                        case 'name': return compareName(f1, f2);
+                        case 'size': return f1.size - f2.size;
+                        case 'time': return f1.time - f2.time;
+                        default:  return compare(f1, f2, 'name');
+                    }
+                }
+                return (this.sortIsAsc ? 1 : -1) * compare(f1, f2, this.sortColumn);
+            });
+        },
         sortClick(sortColumn = 'name') {
-            this.reSort(sortColumn, this.sortColumn != sortColumn || !this.sortIsAsc);
+            this.sortColumn = sortColumn || 'name';
+            this.sortIsAsc = this.sortColumn != sortColumn || !this.sortIsAsc;
+            this.filesSort();
         },
         reSort(column, isAsc) {
             this.sortColumn = column;
@@ -128,10 +197,6 @@ const vm = Vue.createApp({
             this.showHidden = !this.showHidden;
             localStorage.setItem('showHidden', this.showHidden);
         },
-        togglePicMode() {
-            this.picMode = !this.picMode;
-            localStorage.setItem('picMode', this.picMode);
-        },
         switchMode(mode) {
             this.mode = mode;
             localStorage.setItem('mode', mode);
@@ -139,6 +204,7 @@ const vm = Vue.createApp({
         folderEnter(folderName) {
             this.pagePath.push(folderName + "/");
             this.getFiles();
+            this.filterText = '';
         },
         folderLeave() {
             if (this.pagePath.length <= 1) {
@@ -146,6 +212,7 @@ const vm = Vue.createApp({
             }
             this.pagePath.pop();
             this.getFiles();
+            this.filterText = '';
         },
         gotoPagePath(idx) {
             console.log(idx);
@@ -261,4 +328,63 @@ function calcNameLen(name) {
         sum += name.charCodeAt(i) < 127 && name.charCodeAt(i) > 31 ? 1 : 2;
     }
     return sum;
+}
+
+// 处理 keys, 排除包含
+function hl_keys(keys) {
+    if (!keys.trim()) return null;
+    keys = keys.toLowerCase().split(' ');
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!keys[i]) continue;
+        for (let j = i + 1; j < keys.length; j++) {
+            if (!keys[j]) continue;
+            if (keys[i].indexOf(keys[j]) >= 0) {
+                keys[j] = '';
+            }
+        }
+    }
+    return keys.filter(k => k);
+}
+
+/** 
+ * arr所有都满足
+ * @return bool
+ */
+function hl_check(hl_key_arr, str_lower) {
+    for(let k of hl_key_arr) {
+        if (str_lower.indexOf(k) < 0) return false;
+    }
+    return true;
+}
+
+/**
+ * 只管高亮（不区分大小写）
+ * @param hl_key_arr = hl_keys(keystr), 全小写
+ * @return array, 如果需要字符串, 调用 .join('');
+ */
+function hl_replace(str_origin, str_lower, hl_key_arr, hl_start = '<hl>', hl_end = '</hl>') {
+    let key_bit = new Array(str_lower.length).fill(0), key_idx;
+    for (let k of hl_key_arr) {
+        key_idx = -1;
+        while((key_idx = str_lower.indexOf(k, key_idx + 1)) >= 0) {
+            // 设置匹配到的标志位为1
+            key_bit.fill(1, key_idx, key_idx + k.length);
+        }
+    }
+    let res = [], prev_bit = 0;
+    // 合并 且 加上高亮字符串
+    for (let i = 0; i < str_lower.length; i++) {
+        // 原始字符 对位到 结果数组
+        res[i] = str_origin[i];
+        // 前后相同 无需额外操作
+        if (key_bit[i] == prev_bit) continue;
+        // 根据后一位0/1判断追加的是头还是尾
+        res[i] = (key_bit[i] == 0 ? hl_end : hl_start ) + str_origin[i];
+        prev_bit = key_bit[i];
+    }
+    // 尾部补漏
+    if (key_bit[key_bit.length-1] == 1) {
+        res[res.length-1] += hl_end; 
+    }
+    return res ? res.join('') : '';
 }

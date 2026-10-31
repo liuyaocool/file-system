@@ -163,6 +163,16 @@ function urlSafeBase64(str = '') {
         .replaceAll('=', '');
 }
 
+function urlSafeBase64Decode(str = '') {
+    str = str.replaceAll('-', '+').replaceAll('_', '/');
+    const addlen = 4 - str.length % 4;
+    for (let i = 0; i < addlen; i++) str += '=';
+    const binary = atob(str);
+    // 4. 转成字节数组，再按 UTF-8 解码
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+}
+
 function dateFormat(sec) {
     DATE_TEMP.setTime(sec * 1000);
     const year = DATE_TEMP.getFullYear();

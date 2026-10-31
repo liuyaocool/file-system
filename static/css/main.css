@@ -2,6 +2,12 @@
 @media (orientation: portrait) and (hover: none) {
 }
 
+hl {
+    color: red;
+/*    background: #23680a;*/
+/*    border-radius: 6px;*/
+}
+
 .path {
     margin: 5px 0 0 5px;
     min-width: 30px;
@@ -16,7 +22,7 @@
     /* float: left; */
 }
 
-#main td {
+.list-main td {
     /* white-space: nowrap; */
     /* overflow: hidden; */
     /* text-overflow: ellipsis; */
@@ -54,10 +60,11 @@
     word-break: break-all;
 }
 
-#main {
+.list-main {
     /* 超出宽度自动隐藏 */
     table-layout: fixed;
     width: 100%;
+    padding-bottom: 26px;
 }
 
 .name-btn {
@@ -168,4 +175,10 @@
 }
 .pic-name {
     padding: 0 5px 5px 5px;
+}
+
+.filter {
+    position: fixed;
+    bottom: 2px;
+    left: 10px;
 }
